@@ -10,7 +10,7 @@ namespace Task.BinaryTree
     {
         private class Node<T>
         {
-            public T Value { get;  set; }
+            public T Value { get; set; }
             public Node<T> Right { get; set; }
             public Node<T> Left { get; set; }
             public Node(T value)
@@ -50,7 +50,9 @@ namespace Task.BinaryTree
         public BinaryTree()
             : this(Comparer<T>.Default)
         { }
-
+        public BinaryTree(Comparison<T> compare)
+            : this(Comparer<T>.Create(compare))
+        { }
         public BinaryTree(IComparer<T> comparer)
         {
             if (comparer == null)
@@ -106,49 +108,49 @@ namespace Task.BinaryTree
         }
         private bool Remove(Node<T> current, Node<T> parent)
         {
-                Node<T> removed = null;
-                if (current.Left == null || current.Right == null)
+            Node<T> removed = null;
+            if (current.Left == null || current.Right == null)
+            {
+                Node<T> child = null;
+                removed = current;
+
+                if (current.Left != null)
+                    child = current.Left;
+                else if (current.Right != null)
+                    child = current.Right;
+
+                if (parent == null)
+                    root = child;
+                else
                 {
-                    Node<T> child = null;
-                    removed = current;
-
-                    if (current.Left != null)
-                        child = current.Left;
-                    else if (current.Right != null)
-                        child = current.Right;
-
-                    if (parent == null)
-                        root = child;
+                    if (parent.Left == current)
+                        parent.Left = child;
                     else
-                    {
-                        if (parent.Left == current)
-                            parent.Left = child;
-                        else
-                            parent.Right = child;
-                    }
+                        parent.Right = child;
                 }
-                else 
+            }
+            else
+            {
+                Node<T> mostLeft = current.Right;
+                Node<T> mostLeftParent = current;
+
+                while (mostLeft.Left != null)
                 {
-                    Node<T> mostLeft = current.Right;
-                    Node<T> mostLeftParent = current;
-
-                    while (mostLeft.Left != null)
-                    {
-                        mostLeftParent = mostLeft;
-                        mostLeft = mostLeft.Left;
-                    }
-
-                    current.Value = mostLeft.Value;
-                    removed = mostLeft;
-
-                    if (mostLeftParent.Left == mostLeft)
-                        mostLeftParent.Left = null;
-                    else
-                        mostLeftParent.Right = mostLeft.Right;
+                    mostLeftParent = mostLeft;
+                    mostLeft = mostLeft.Left;
                 }
 
-                Count--;
-                return true;
+                current.Value = mostLeft.Value;
+                removed = mostLeft;
+
+                if (mostLeftParent.Left == mostLeft)
+                    mostLeftParent.Left = null;
+                else
+                    mostLeftParent.Right = mostLeft.Right;
+            }
+
+            Count--;
+            return true;
         }
 
 
@@ -197,13 +199,13 @@ namespace Task.BinaryTree
         }
         private IEnumerable<T> Postorder(Node<T> node)
         {
-            if (node == null) 
+            if (node == null)
                 yield break;
             foreach (var e in Preorder(node.Left))
                 yield return e;
             foreach (var e in Preorder(node.Right))
                 yield return e;
             yield return node.Value;
-        } 
+        }
     }
 }
